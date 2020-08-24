@@ -19,15 +19,27 @@ from bpy.props import (
 def update_lock_camera_to_view(self,context):
     pass #TODO:
 
+def update_view(self,context):
+    pass
+
+class Saved_View(PropertyGroup):
+    location: bpy.props.FloatVectorProperty(name="Location")
+    rotation: bpy.props.FloatVectorProperty(name="Rotation",default=(0,0,0,0),size=4)
+    zoom: bpy.props.FloatProperty(name="Zoom")
+
+
 class Camera_Presets_Scene_Props(PropertyGroup):
-    library_enum: EnumProperty(name="Library Tabs",
-                               items=[('OPTION1',"Option 1","Example Enum"),
-                                      ('OPTION2',"Option 2","Example Enum"),
-                                      ('OPTION3',"Option 3","Example Enum")],
-                               default='OPTION1')
+    library_tabs: EnumProperty(name="Library Tabs",
+                               items=[('CAMERAS',"Cameras","Cameras"),
+                                      ('SAVED_VIEWS',"Saved Views","Saved Views")],
+                               default='CAMERAS',
+                               update=update_view)
 
     preset_path: StringProperty(name="Preset Path",subtype='DIR_PATH')
 
+    saved_views: CollectionProperty(name="Saved Views",type=Saved_View)
+    saved_views_folder_name: StringProperty(name="Saved Views Folder Name")
+    
     lock_camera_to_view: BoolProperty(name="Lock Camera to View",update=update_lock_camera_to_view)
 
     def draw_library_settings(self,layout,context):
@@ -51,6 +63,7 @@ class Camera_Presets_Scene_Props(PropertyGroup):
         del bpy.types.Scene.camera_presets
 
 classes = (
+    Saved_View,
     Camera_Presets_Scene_Props,
 )
 

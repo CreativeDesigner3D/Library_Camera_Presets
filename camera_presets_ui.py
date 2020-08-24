@@ -21,6 +21,8 @@ class FILEBROWSER_PT_camera_presets_headers(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        props = camera_presets_utils.get_scene_props(context.scene)
+
         row = layout.row()
         row.scale_y = 1.3
         row.label(text="Camera Presets")
@@ -28,12 +30,21 @@ class FILEBROWSER_PT_camera_presets_headers(bpy.types.Panel):
 
         row = layout.row()
         row.scale_y = 1.3
-        row.operator('camera_presets.save_preset',icon='ADD')  
+        row.prop(props,'library_tabs',expand=True)
 
-        if context.scene.camera:
-            props = camera_presets_utils.get_scene_props(context.scene)
-            layout.prop(props,'lock_camera_to_view')
+        if props.library_tabs == 'CAMERAS':
+            row = layout.row()
+            row.scale_y = 1.3
+            row.operator('camera_presets.save_preset',icon='ADD')  
 
+            if context.scene.camera:
+                
+                layout.prop(props,'lock_camera_to_view')
+        
+        if props.library_tabs == 'SAVED_VIEWS':
+            row = layout.row()
+            row.scale_y = 1.3
+            row.operator('camera_presets.save_view',icon='ADD')              
 
 
 class CAMERA_PRESETS_PT_library_settings(bpy.types.Panel):
