@@ -44,7 +44,7 @@ class camera_presets_OT_drop(Operator):
         if props.library_tabs == 'SAVED_VIEWS':
             bpy.ops.camera_presets.load_preset(filepath=self.filepath)
 
-        if props.library_tabs == '':
+        if props.library_tabs == 'CAMERAS':
 
             if context.scene.camera:
                 '''
@@ -68,6 +68,7 @@ class camera_presets_OT_drop(Operator):
             else:
                 bpy.ops.object.camera_add(align='VIEW')
                 camera = context.active_object
+                camera["PROMPT_ID"] = "camera_presets.camera_properties"   
                 bpy.ops.view3d.camera_to_view()
                 camera.data.clip_start = .01
                 camera.data.clip_end = 9999
@@ -174,15 +175,117 @@ class camera_presets_OT_load_view(Operator):
         return {'FINISHED'}
 
 
-class camera_presets_OT_temp(Operator):
-    bl_idname = "camera_presets.temp"
-    bl_label = "Temp"
+class camera_presets_OT_camera_properties(Operator):
+    bl_idname = "camera_presets.camera_properties"
+    bl_label = "Camera Properties"
     bl_options = {'UNDO'}
     
     filepath: StringProperty(name='Library Name')
 
+    def invoke(self,context,event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=400)
+
     def execute(self, context):
-        #TODO: Placeholder
+        pass
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        rd = scene.render        
+        view = context.space_data
+            
+        cam = context.object.data
+
+        box = layout.box()
+        box.prop(view, "lock_camera")
+
+        box = layout.box()
+        col = box.column(align=True)
+        row = col.row(align=True)
+        row.label(text="Resolution:")
+        row.prop(rd, "resolution_x", text="X")
+        row.prop(rd, "resolution_y", text="Y")
+
+        box = layout.box()
+        box.label(text="Lens Settings:")
+        row = box.row()
+        row.prop(cam, "type",expand=True)
+
+        # col = layout.column()
+
+        if cam.type == 'PERSP':
+            row = box.row(align=True)
+            row.prop(cam, "lens_unit",text="Size")
+            if cam.lens_unit == 'MILLIMETERS':
+                row.prop(cam, "lens",text="Length")
+            elif cam.lens_unit == 'FOV':
+                row.prop(cam, "angle",text="Angle")
+
+        elif cam.type == 'ORTHO':
+            row = box.row()
+            row.label(text="Scale:")
+            row.prop(cam, "ortho_scale",text="")
+
+        elif cam.type == 'PANO':
+            engine = bpy.context.scene.render.engine
+            if engine == 'CYCLES':
+                ccam = cam.cycles
+                box.prop(ccam, "panorama_type")
+                box.prop(cam, "lens_unit")
+                if ccam.panorama_type == 'FISHEYE_EQUIDISTANT':
+                    box.prop(ccam, "fisheye_fov")
+                elif ccam.panorama_type == 'FISHEYE_EQUISOLID':
+                    box.prop(ccam, "fisheye_lens", text="Lens")
+                    box.prop(ccam, "fisheye_fov")
+                elif ccam.panorama_type == 'EQUIRECTANGULAR':
+                    sub = box.column(align=True)
+                    sub.prop(ccam, "latitude_min", text="Latitude Min")
+                    sub.prop(ccam, "latitude_max", text="Max")
+                    sub = box.column(align=True)
+                    sub.prop(ccam, "longitude_min", text="Longitude Min")
+                    sub.prop(ccam, "longitude_max", text="Max")
+            elif engine in {'BLENDER_RENDER', 'BLENDER_EEVEE', 'BLENDER_WORKBENCH'}:
+                if cam.lens_unit == 'MILLIMETERS':
+                    box.prop(cam, "lens")
+                elif cam.lens_unit == 'FOV':
+                    box.prop(cam, "angle")
+
+        col = box.column()
+
+        row = col.row(align=True)
+        row.label(text="Shift:")
+        row.prop(cam, "shift_x", text="X")
+        row.prop(cam, "shift_y", text="Y")
+
+        row = col.row(align=True)
+        row.label(text="Clip:")
+        row.prop(cam, "clip_start", text="Start")
+        row.prop(cam, "clip_end", text="End")
+
+        #DOF
+        box = layout.box()
+        box.prop(cam.dof,'use_dof',text="Depth of Field")
+        if cam.dof.use_dof:
+            row = box.row()
+            row.label(text="Focus on Object:")
+            row.prop(cam.dof, "focus_object", text="")
+
+            sub = box.column()
+            sub.active = (cam.dof.focus_object is None)
+            row = sub.row()
+            row.label(text="Focus Distance:")        
+            row.prop(cam.dof, "focus_distance", text="")
+
+            flow = box.grid_flow(row_major=True, columns=0, even_columns=True, even_rows=False, align=False)
+
+            col = flow.column()
+            col.prop(cam.dof, "aperture_fstop")
+            col.prop(cam.dof, "aperture_blades")
+
+            col = flow.column()
+            col.prop(cam.dof, "aperture_rotation")
+            col.prop(cam.dof, "aperture_ratio")
         return {'FINISHED'}
 
 classes = (
@@ -191,7 +294,7 @@ classes = (
     camera_presets_OT_save_preset,
     camera_presets_OT_save_view,
     camera_presets_OT_load_view,
-    camera_presets_OT_temp,
+    camera_presets_OT_camera_properties,
 )
 
 register, unregister = bpy.utils.register_classes_factory(classes)
