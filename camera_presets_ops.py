@@ -1,5 +1,5 @@
 import bpy,os,inspect
-
+import math
 from bpy.types import (Header, 
                        Menu, 
                        Panel, 
@@ -15,7 +15,7 @@ from bpy.props import (StringProperty,
                        EnumProperty,
                        CollectionProperty)
 from . import camera_presets_utils
-from .pc_lib import pc_utils
+from .pc_lib import pc_utils, pc_unit
 
 import uuid
 
@@ -192,6 +192,7 @@ class camera_presets_OT_camera_properties(Operator):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
+        obj = context.object
         rd = scene.render        
         view = context.space_data
             
@@ -206,6 +207,58 @@ class camera_presets_OT_camera_properties(Operator):
         row.label(text="Resolution:")
         row.prop(rd, "resolution_x", text="X")
         row.prop(rd, "resolution_y", text="Y")
+
+        box = layout.box()
+        col1 = box.row()
+        col2 = col1.split()
+        col = col2.column(align=True)
+        col.label(text='Location:')
+        #X
+        row = col.row(align=True)
+        row.prop(obj,"lock_location",index=0,text="")
+        if obj.lock_location[0]:
+            row.label(text="X: " + str(round(pc_unit.meter_to_active_unit(obj.location.x),4)))
+        else:
+            row.prop(obj,"location",index=0,text="X")
+        #Y    
+        row = col.row(align=True)
+        row.prop(obj,"lock_location",index=1,text="")
+        if obj.lock_location[1]:
+            row.label(text="Y: " + str(round(pc_unit.meter_to_active_unit(obj.location.y),4)))
+        else:
+            row.prop(obj,"location",index=1,text="Y")
+        #Z    
+        row = col.row(align=True)
+        row.prop(obj,"lock_location",index=2,text="")
+        if obj.lock_location[2]:
+            row.label(text="Z: " + str(round(pc_unit.meter_to_active_unit(obj.location.z),4)))
+        else:
+            row.prop(obj,"location",index=2,text="Z")
+            
+        col2 = col1.split()
+        col = col2.column(align=True)
+        col.label(text='Rotation:')
+        #X
+        row = col.row(align=True)
+        row.prop(obj,"lock_rotation",index=0,text="")
+        if obj.lock_rotation[0]:
+            row.label(text="X: " + str(round(math.degrees(obj.rotation_euler.x),4)))
+        else:
+            row.prop(obj,"rotation_euler",index=0,text="X")
+        #Y    
+        row = col.row(align=True)
+        row.prop(obj,"lock_rotation",index=1,text="")
+        if obj.lock_rotation[1]:
+            row.label(text="Y: " + str(round(math.degrees(obj.rotation_euler.y),4)))
+        else:
+            row.prop(obj,"rotation_euler",index=1,text="Y")
+        #Z    
+        row = col.row(align=True)
+        row.prop(obj,"lock_rotation",index=2,text="")
+        if obj.lock_rotation[2]:
+            row.label(text="Y: " + str(round(math.degrees(obj.rotation_euler.z),4)))
+        else:
+            row.prop(obj,"rotation_euler",index=2,text="Z")
 
         box = layout.box()
         box.label(text="Lens Settings:")
@@ -263,6 +316,9 @@ class camera_presets_OT_camera_properties(Operator):
         row.prop(cam, "clip_start", text="Start")
         row.prop(cam, "clip_end", text="End")
 
+        row = col.row(align=True)
+        row.prop(rd, "film_transparent", text="Transparent Background")
+        
         #DOF
         box = layout.box()
         box.prop(cam.dof,'use_dof',text="Depth of Field")
