@@ -342,7 +342,6 @@ class camera_presets_OT_camera_properties(Operator):
             col = flow.column()
             col.prop(cam.dof, "aperture_rotation")
             col.prop(cam.dof, "aperture_ratio")
-        return {'FINISHED'}
 
 classes = (
     camera_presets_OT_activate,
