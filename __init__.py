@@ -23,6 +23,7 @@ def load_library_on_file_load(scene=None):
     pc_utils.register_library(name="Camera Presets",
                               activate_id='camera_presets.activate',
                               drop_id='camera_presets.drop',
+                              namespace="camera_presets",
                               icon='OUTLINER_OB_CAMERA')
 
 #Standard register/unregister Function for Blender Add-ons

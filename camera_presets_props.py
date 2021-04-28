@@ -50,6 +50,29 @@ class Camera_Presets_Scene_Props(PropertyGroup):
         col.separator()
         col.operator('camera_presets.temp',text="Import Presets",icon='IMPORT')
 
+    def draw_filebrowser_header(self,layout,context):
+        row = layout.row()
+        row.scale_y = 1.3
+        row.label(text="Camera Presets")
+        row.popover(panel="CAMERA_PRESETS_PT_library_settings",text="",icon='SETTINGS')
+
+        row = layout.row()
+        row.scale_y = 1.3
+        row.prop(self,'library_tabs',expand=True)
+
+        if self.library_tabs == 'CAMERAS':
+            row = layout.row()
+            row.scale_y = 1.3
+            row.operator('camera_presets.save_preset',icon='ADD')  
+
+            if context.scene.camera:
+                layout.prop(self,'lock_camera_to_view')
+        
+        if self.library_tabs == 'SAVED_VIEWS':
+            row = layout.row()
+            row.scale_y = 1.3
+            row.operator('camera_presets.save_view',icon='ADD')         
+
     @classmethod
     def register(cls):
         bpy.types.Scene.camera_presets = PointerProperty(
