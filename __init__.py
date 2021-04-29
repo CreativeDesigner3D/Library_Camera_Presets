@@ -36,11 +36,14 @@ def register():
     bpy.app.handlers.load_post.append(load_library_on_file_load)
 
 def unregister():
-    camera_presets_ops.unregister()
-    camera_presets_props.unregister()
-    camera_presets_ui.unregister()
+    try:
+        camera_presets_ops.unregister()
+        camera_presets_props.unregister()
+        camera_presets_ui.unregister()
 
-    bpy.app.handlers.load_post.remove(load_library_on_file_load)  
+        bpy.app.handlers.load_post.remove(load_library_on_file_load)  
 
-    pc_utils.unregister_library("Camera Presets")
+        pc_utils.unregister_library("Camera Presets")
+    except:
+        pass
 
