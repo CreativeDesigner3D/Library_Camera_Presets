@@ -66,13 +66,18 @@ class camera_presets_OT_drop(Operator):
                     context.scene.camera.data.sensor_fit = 'HORIZONTAL'
 
             else:
+                spd = context.space_data
                 bpy.ops.object.camera_add(align='VIEW')
                 camera = context.active_object
                 camera["PROMPT_ID"] = "camera_presets.camera_properties"   
                 bpy.ops.view3d.camera_to_view()
-                camera.data.clip_start = .01
-                camera.data.clip_end = 9999
+                camera.data.clip_start = spd.clip_start
+                camera.data.clip_end = spd.clip_end
                 camera.data.ortho_scale = 200.0
+                camera.data.sensor_width = 72  
+                camera.data.lens = spd.lens
+                spd.region_3d.view_camera_offset = [0,0]
+                spd.region_3d.view_camera_zoom = 29.0746                
         return {'FINISHED'}
 
 
